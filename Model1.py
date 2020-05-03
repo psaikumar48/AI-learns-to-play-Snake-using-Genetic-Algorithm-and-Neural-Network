@@ -30,7 +30,7 @@ def update_snake():
     snake_body=Snake[1:len(Snake)]
     display()
 def snake_game(steps,weights):
-    global Snake,screen
+    global Snake,screen,cloop
     Snake_wait_time,overall_score,step_count=0,0,0
     mloop=True
     while mloop:
@@ -124,9 +124,9 @@ def finding_output_from_weights_ipnurons(weights):
 def crossover():
     offspring=[]
     for _ in range(1000):
-        if len(offspring)<population_size-parants_size:
-            parant1_id=random.randint(0,parants_size-1)
-            parant2_id=random.randint(0,parants_size-1)
+        if len(offspring)<population_len-parants_len:
+            parant1_id=random.randint(0,parants_len-1)
+            parant2_id=random.randint(0,parants_len-1)
             wts=[]
             for i in range(len_weights):
                 if random.uniform(0, 1) < 0.5:
@@ -138,9 +138,31 @@ def crossover():
             break
     return offspring
 def mutation(offspring):
-    for i in range(population_size-parants_size):
+    for i in range(population_len-parants_len):
         for _ in range(35):
             plc=random.randint(0,len_weights-1)
             value=random.choice(np.arange(-1,1,step=0.001))
             offspring[i][plc]=offspring[i][plc]+value
     return offspring
+
+M,N,grid_size=10,10,20
+grids=[(i,j) for i in range(M) for j in range(N)]
+Actions=['Top','Right','Bottum','Left']
+generation_len,population_len,parants_len,steps=400,100,10,500
+population=np.random.choice(np.arange(-1,1,step=0.01),size=(population_len,288),replace=True)
+for i in range(generation_len):
+    print('########### ','Generation ',i,' ###########')
+    fitness=[]
+    for j in range(population_len):
+        score=snake_game(steps,list(population[i,:]))
+        print('Chromosome ',j,' : ',score)
+        fitness.append(score)
+    parants=[]
+    for k in range(parants_len):
+        parant_id=fitness.index(max(fitness))
+        fitness[parant_id]=-999
+        parants.append(list(population[parant_id,:]))
+    offsprings=crossover()
+    offsprings=mutation(offsprings)
+    population=np.reshape(parants+offsprings,(population_len,-1))
+pygame.quit()
