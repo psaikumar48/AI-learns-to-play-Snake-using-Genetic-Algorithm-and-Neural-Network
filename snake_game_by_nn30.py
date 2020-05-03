@@ -120,7 +120,7 @@ def finding_output_from_weights_ipnurons(weights):
     A2 = softmax(Z2)
     action=Actions[np.argmax(A2)]
 
-# function applied on Childrens (crossover,mutation
+# function applied on Childrens (crossover,mutation)
 def crossover():
     offspring=[]
     for _ in range(1000):
