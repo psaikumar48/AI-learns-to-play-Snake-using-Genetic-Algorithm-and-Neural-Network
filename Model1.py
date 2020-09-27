@@ -16,6 +16,7 @@ def display():
 def update_snake():
     global snake_tail,snake_head,snake_body
     display()
+    pygame.time.wait(pause_time)
     (x,y)=Snake[0]
     Snake.insert(0,(x+1,y)) if action == 'Right' else Snake.insert(0,(x-1,y)) if action == 'Left' else Snake.insert(0,(x,y+1)) if action == 'Bottum' else Snake.insert(0,(x,y-1))
     snake_tail=Snake.pop()
@@ -36,9 +37,9 @@ def prediction_from_genetic_weights():
     d2=[(x+_,y-_) for _ in range(1,max(M-x,N-y)) if (x+_,y-_) in grids]
     d6=[(x-_,y+_) for _ in range(1,max(M-x,N-y))  if (x-_,y+_) in grids]
     d=[d1,d2,d3,d4,d5,d6,d7,d8]
-    wall_distance=[len(i)/9 for i in d]
-    food_presence=[(9-j.index(Food))/9 if Food in j else 0 for j in d]
-    body_presence=[min([dv.index(v) if v in Snake else 9 for v in dv])/9 if dv else 0 for dv in d]
+    wall_distance=[len(i)/10 for i in d]
+    food_presence=[(10-j.index(Food))/10 if Food in j else 0 for j in d]
+    body_presence=[min([dv.index(v) if v in Snake else 10 for v in dv])/10 if dv else 0 for dv in d]
     vision=[j[i] for i in range(8) for j in [wall_distance,body_presence,food_presence]]
     input_layer=vision+head_diriction+tail_diriction
     hidden_l1=numpy.matmul(numpy.reshape(input_layer,(1,32)),numpy.reshape(weights[:640],(32,20)))+numpy.reshape(weights[640:660],(1,20))
@@ -60,13 +61,11 @@ def Snake_game():
     screen = pygame.display.set_mode((M*grid_size,N*grid_size))
     (x1,y1)=random.choice(grids)
     (x2,y2)=random.choice([(x1,y1+1),(x1-1,y1),(x1,y1-1),(x1+1,y1)])
-    Snake,steps,uniq=[(x1,y1),(x2,y2)],1,[0]*81
+    Snake,steps,uniq=[(x1,y1),(x2,y2)],0,[0]*120
     food()
     loop=True
     while loop:
-        blocks=[1 if (i not in grids or i in Snake) else 0 for i in [(Snake[0][0],Snake[0][1]-1),(Snake[0][0]+1,Snake[0][1]),(Snake[0][0],Snake[0][1]+1),(Snake[0][0]-1,Snake[0][1])]]
-        steps=steps+1 if sum(blocks)==2 else steps
-        pygame.time.wait(pause_time)
+        steps=steps+1
         prediction_from_genetic_weights()
         update_snake()
         if snake_head==Food:
@@ -82,15 +81,15 @@ def Snake_game():
             elif event.type == pygame.KEYDOWN:
                 pause_time = pause_time+25  if event.key == pygame.K_UP else pause_time-25 if event.key == pygame.K_DOWN and pause_time>=25 else pause_time
                 if event.key == pygame.K_ESCAPE:
-                    loop,steps = False,82
+                    loop,steps = False,119
         if (Snake[0],Food) not in uniq:
             uniq.append((Snake[0],Food))
             del uniq[0]
         else:
             loop=False
-    score=len(Snake)-1
-    High_score=score-1 if score-1 > High_score else High_score
-    return steps**((score**2.2)/(steps)),score-1
+    score=len(Snake)-2
+    High_score=score if score > High_score else High_score
+    return steps+((2**score)+(score**2.1)*500)-((score**1.2)*((0.25*steps)**1.3)),score
 
 def crossover():
     global offspring
@@ -108,7 +107,7 @@ def mutation():
             value=random.choice(numpy.arange(-0.5,0.5,step=0.001))
             offspring[i][plc]=offspring[i][plc]+value
 
-M,N,grid_size=10,10,20
+M,N,grid_size=11,11,20
 grids=[(i,j) for i in range(M) for j in range(N)]
 Actions=['Top','Right','Bottum','Left']
 pause_time,generation_length,population_length,parants_length=0,2000,500,50
@@ -124,16 +123,16 @@ for i in range(generation_length+1):
     if  mloop:
         Number_of_generations=Generation+i+1
         print('########### ','Generation ',Number_of_generations,' ###########')
-        Fitness,gen_high_score=[],0
+        Fitness,Score=[],[]
         for j in range(population_length):
             if  mloop:
                 weights=list(population[j,:])
                 fittness,score=Snake_game()
-                print('Chromosome ',"{:02d}".format(j),' >>> ','Score : ',"{:02d}".format(score),', Fittness : ',fittness)
+                print('Chromosome ',"{:03d}".format(j),' >>> ','Score : ',"{:03d}".format(score),', Fittness : ',fittness)
                 Fitness.append(fittness)
-                gen_high_score=score if score > gen_high_score else gen_high_score
+                Score.append(score)
         if  mloop:
-            print('Generation high score : ',gen_high_score,', Generation high fittness : ',max(Fitness),', Overall high score : ',High_score,)
+            print('Generation high score : ',max(Score),', Generation Avg score : ',sum(Score)/len(Score),', Generation high fittness : ',max(Fitness),', Overall high score : ',High_score,)
             parants,parants_selection=[],[]
             for k in range(parants_length):
                 parant_id=Fitness.index(max(Fitness))
