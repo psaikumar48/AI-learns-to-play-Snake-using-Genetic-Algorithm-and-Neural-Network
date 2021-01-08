@@ -31,7 +31,7 @@ def Snake_game():
         elif snake_head==Food:
             food()
             Snake.append(snake_tail)
-            pause_time =60  if len(Snake)==M*N-10 else pause_time
+            pause_time =key_sensitive*5  if len(Snake)==M*N-10 else pause_time
         elif snake_head not in grids or snake_head in snake_body:
             loop=False
         ev=pygame.event.get()
