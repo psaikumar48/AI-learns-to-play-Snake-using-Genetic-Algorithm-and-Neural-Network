@@ -2,8 +2,6 @@ import pygame
 import os
 import random
 import numpy
-import matplotlib.pyplot as plt
-
 
 # Input values
 M=10                                         # number of blocks in horizental diriction
