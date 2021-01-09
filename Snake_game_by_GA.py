@@ -4,8 +4,8 @@ import random
 import numpy
 
 # Input values
-M=10                                         # number of blocks in horizental diriction
-N=10                                         # number of blocks in verticle diriction
+M=10                                         # number of blocks in horizental direction
+N=10                                         # number of blocks in verticle direction
 grid_size=25                                 # size of block
 population_length=500         
 parants_length=50
